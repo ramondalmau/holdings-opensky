@@ -16,7 +16,7 @@ In this repository, we provide the Jupyter notebook and dataset necessary to rep
 
 ## Files
 
-The key resource in this repository is the [dataset.csv](dataset.csv) file, which contains the observations required to reproduce the self-training process outlined in the [holdings-study.ipynb](holdings-study.ipynb) notebook.
+The key resource in this repository is the [dataset.csv](dataset.csv) file, which contains the observations required to reproduce the self-training process outlined in the [holding-study.ipynb](holding-study.ipynb) notebook.
 
 This dataset is the result of a meticulous process involving the detection of holdings using the neural network from the `traffic` tool, computation of fuel consumption using `OpenAP`, grouping holdings by airport and 30-minute intervals, and merging the results with meteorological aerodrome reports (METARs) processed with `metafora` and air traffic flow management (ATFM) regulations information. Please note that we've excluded the raw traffic, weather, and ATFM regulations data to protect confidentiality. Furthermore, we've removed the airport and time columns, as the primary objective of this paper was just to demonstrate the potential of the self-training method.
 
