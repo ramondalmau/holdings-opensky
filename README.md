@@ -86,7 +86,7 @@ The output holding instance is the same, but it's enriched with three additional
 
 ### Weather data processing
 
-To process the weather observations (which you can obtain them from [Aviation Weather Centre (AWC)](https://aviationweather.gov/) or [ogimet](https://www.ogimet.com/), for instance), you can use the open-source tool `metafora` and the following functions:
+To process the weather observations (which you can obtain for free from [Aviation Weather Centre (AWC)](https://aviationweather.gov/) or [ogimet](https://www.ogimet.com/), for instance), you can use the open-source tool `metafora` and the following functions:
 
 ```python
 from metafora import Metar, ml_features
