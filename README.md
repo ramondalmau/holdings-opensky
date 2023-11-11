@@ -30,6 +30,8 @@ We recommend to use Python 3.10 :snake:, and to install the libraries in [requir
 pip install -r requirements.txt
 ```
 
+We strongly recommend initiating the process by creating a clean conda environment (with Python 3.10). Execute the provided command to install the required libraries. It's crucial to strictly adhere to this procedure, as we will not address issues that arise if these steps are not followed meticulously.
+
 ## For those starting from raw data ...
 
 If you intend to detect the holdings, process the weather data, and compute fuel consumption, make sure to install the following additional libraries:
@@ -86,7 +88,7 @@ The output holding instance is the same, but it's enriched with three additional
 
 ### Weather data processing
 
-To process the weather observations (which you can obtain for free from [Aviation Weather Centre (AWC)](https://aviationweather.gov/) or [ogimet](https://www.ogimet.com/), for instance), you can use the open-source tool `metafora` and the following functions:
+To process the weather observations (which you can obtain for free from [Aviation Weather Centre (AWC)](https://aviationweather.gov/) or [ogimet](https://www.ogimet.com/), for instance), you can use the open-source tool `metafora` and the following functions (remember to use the version specified in the `requirements.txt`, as a previous version of `metafora` was used in this study) :
 
 ```python
 from metafora import Metar, ml_features
@@ -234,12 +236,55 @@ from pandas import merge_asof
 X = merge_asof(holdings.sort_values('timestamp'),
                weather.rename({'time': 'timestamp'}, axis=1).sort_values('timestamp'),
                on='timestamp',
-               by='airport',
+               left_by='airport',
+               right_by='station',
                direction="forward",
-               tolerance=timedelta(hours=1))
+               tolerance=timedelta(hours=1)).dropna(subset=['station'])
 ```
 
-The final step involves merging with ATFM regulations to add the necessary labels. However, I regret that I am unable to share this data due to confidentiality reasons. :pray: :sweat_smile: ... I apologize if this information is disappointing at this stage. Nevertheless, you may explore alternative methods for labeling observations.
+The final step involves merging with ATFM regulations to add the necessary labels. However, I regret that I am unable to share this data due to confidentiality reasons. :pray: :sweat_smile: ... I apologize if this information is disappointing at this stage. Nevertheless, you may explore alternative methods for labeling observations. To assist you, I am providing an anonymized extract that serves two purposes: (1) to demonstrate the structure of the regulations data, and (2) to illustrate the process of merging them with the dataset for labeling observations. 
+
+The anonymized extract with three columns: airport where the regulation was applied, start and end time of the regulation as well as reason:
+
+|airport|start_time         |end_time           |reason|
+|-------|-------------------|-------------------|------|
+|A      |2023-10-01 04:00:00|2023-10-01 16:00:00|Other     |
+|B      |2023-10-01 07:10:00|2023-10-01 08:05:00|Other          |
+|B      |2023-10-01 09:40:00|2023-10-01 10:35:00|Other          |
+|C      |2023-10-01 05:00:00|2023-10-01 06:40:00|Other               |
+|D      |2023-10-01 04:00:00|2023-10-01 22:00:00|Other               |
+|E|2023-10-01 16:00:00|2023-10-01 17:00:00|Other     |
+|E|2023-10-01 16:00:00|2023-10-01 18:00:00|Other     |
+|E|2023-10-01 12:00:00|2023-10-01 13:20:00|Other     |
+|F|2023-10-01 09:00:00|2023-10-01 11:00:00|Other     |
+|G|2023-10-01 18:00:00|2023-10-01 20:30:00|Other     |
+|H|2023-10-01 21:00:00|2023-10-01 23:00:00|Other     |
+|I|2023-10-01 12:00:00|2023-10-01 13:00:00|Other     |
+|J|2023-10-01 16:00:00|2023-10-01 17:20:00|Other     |
+|K|2023-10-01 17:30:00|2023-10-01 19:00:00|Other     |
+|K |2023-10-01 19:40:00|2023-10-01 21:20:00|Other     |
+|L|2023-10-01 07:00:00|2023-10-01 16:00:00|Other     |
+|M|2023-10-01 05:00:00|2023-10-01 07:00:00|Other     |
+|N|2023-10-01 05:40:00|2023-10-01 08:00:00|Other   |
+|O|2023-10-01 03:30:00|2023-10-01 10:00:00|Weather|
+|O|2023-10-01 18:40:00|2023-10-01 20:20:00|Weather     |
+|P |2023-10-01 10:20:00|2023-10-01 14:00:00|Weather     |
+|Q|2023-10-01 03:00:00|2023-10-01 06:00:00|Weather     |
+|Q|2023-10-01 18:00:00|2023-10-01 21:00:00|Weather    |
+|R|2023-10-01 18:00:00|2023-10-01 21:00:00|Weather         |
+|S|2023-10-01 06:00:00|2023-10-01 09:00:00|Weather         |
+
+And the code the merge these data with the dataset for labelling obdservations: 
+
+```python
+from pandas import merge
+ 
+X = merge(X, regulations, on="airport", how="left")
+mask = ~X["time"].between(X["start_time"], X["end_time"], inclusive="left")
+X.loc[mask, "reason"] = None
+X.sort_values(["reason"], na_position = "last", inplace=True)
+X.drop_duplicates(subset=["airport", "time"], keep="first", inplace=True)
+```
 
 
 ## Contribute :bug: 
